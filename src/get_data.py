@@ -59,11 +59,11 @@ if __name__ == "__main__":
     with open("config/credentials.yaml", "r") as file:
         creds = load(file, SafeLoader)
 
-    # url = "https://api.pge.com/GreenButtonConnect/espi/1_1/resource/Batch/Bulk/52050?correlationID=d5ddbd38-5075-475d-9f3b-83cf1dc96307"
-    # data = get_access_token(creds["client_id"], creds["client_secret"])
-    # token = data["client_access_token"]
-    # data_file = get_data(url, token)
-    data_file = "data/api_data_2_10_2026.json"
+    url = ""
+    data = get_access_token(creds["client_id"], creds["client_secret"])
+    token = data["client_access_token"]
+    data_file = get_data(url, token)
+
     data_list = parse_xml(data_file)
     data = pl.from_dicts(data_list, schema=schema)
     data = data.with_columns(
@@ -73,4 +73,4 @@ if __name__ == "__main__":
         .alias("start_time"),
         pl.lit("kWh").alias("unit"),
     )
-    data.write_csv(f"processed_data/data_2026-02-10.csv")
+    data.write_csv(f"processed_data/data_{datetime.date.today()}.csv")
