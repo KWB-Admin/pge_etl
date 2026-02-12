@@ -17,3 +17,4 @@ data
 cert
 processed_data
 config/credentials.yaml
+log/pge_etl.log

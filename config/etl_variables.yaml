@@ -1,0 +1,36 @@
+db_name: kwb_dw
+schema_name: pge
+
+sources:
+  - name: pge_daily_energy_usage
+    table_name: fact_daily_energy_usage
+    prim_key: 
+      - usage_point_id
+      - start_time
+    update_cols:
+      - value
+      - time_of_use
+    url: https://services6.arcgis.com/xudePi1aMswsVb1Q/arcgis/rest/services/survey123_96c8db9efc604aff8dd42bbb983f438c_results/FeatureServer/0/query?where=CreationDate > CURRENT_TIMESTAMP - INTERVAL '1' DAY OR EditDate > CURRENT_TIMESTAMP - INTERVAL '1' DAY &outFields=well_number, date_collected, measurement
+    schema:
+      - json_field: usage_point
+        db_field: usage_point_id
+        dtype: string
+      - json_field: reading_quality
+        db_field: reading_quality
+        dtype: string
+      - json_field: duration
+        db_field: duration
+        dtype: int
+      - json_field: start
+        db_field: start_time
+        dtype: timestamp 
+      - json_field: value
+        db_field: value
+        dtype: float64
+      - json_field: tou
+        db_field: time_of_use
+        dtype: string
+      - json_field: unit
+        db_field: unit
+        dtype: string       
+
