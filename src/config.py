@@ -3,7 +3,7 @@ import logging
 from .models import Credentials, SourceConfig, ETLConfig, FieldMapping
 from .exceptions import ConfigError
 
-logger = logging.getLogger("agol_etl.config")
+logger = logging.getLogger("pge_etl.config")
 
 
 def load_config(path: str):

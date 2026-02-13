@@ -10,7 +10,6 @@ sources:
     update_cols:
       - value
       - time_of_use
-    url: https://services6.arcgis.com/xudePi1aMswsVb1Q/arcgis/rest/services/survey123_96c8db9efc604aff8dd42bbb983f438c_results/FeatureServer/0/query?where=CreationDate > CURRENT_TIMESTAMP - INTERVAL '1' DAY OR EditDate > CURRENT_TIMESTAMP - INTERVAL '1' DAY &outFields=well_number, date_collected, measurement
     schema:
       - json_field: usage_point
         db_field: usage_point_id

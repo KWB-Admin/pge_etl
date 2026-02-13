@@ -61,7 +61,7 @@ def extract(creds: Credentials, source_config: SourceConfig):
 
 
 def get_pending_webhooks():
-    return "https://api.pge.com/GreenButtonConnect/espi/1_1/resource/Batch/Bulk/52050?correlationID=5ab1f9bf-d592-4b81-9e6c-5d28d3f160b3"
+    return ""
 
 
 def get_access_token(session: requests.Session, creds: Credentials) -> str:
@@ -93,7 +93,7 @@ def get_access_token(session: requests.Session, creds: Credentials) -> str:
 def get_data(session: requests.Session, url: str, token: str) -> Dict:
     header = {"Authorization": f"Bearer {token}"}
     try:
-        response = requests.get(
+        response = session.get(
             url=url,
             headers=header,
             cert=("cert/certificate.txt", "cert/private_key_1.txt"),

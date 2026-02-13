@@ -5,12 +5,9 @@ from psycopg2.extras import execute_values
 from typing import Dict
 from contextlib import contextmanager
 from .models import Credentials, SourceConfig, ETLConfig, ETLMetrics
+from .exceptions import LoadError
 
 logger = logging.getLogger("pge_etl.load")
-
-
-class LoadError(Exception):
-    pass
 
 
 @contextmanager

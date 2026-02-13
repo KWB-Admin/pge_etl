@@ -1,12 +1,9 @@
 import polars, logging
 from typing import Optional, Dict
 from .models import SourceConfig
+from .exceptions import TransformError
 
-logger = logging.getLogger("agol_etl.transform")
-
-
-class TransformError(Exception):
-    pass
+logger = logging.getLogger("pge_etl.transform")
 
 
 def transform(
