@@ -1,6 +1,6 @@
 from yaml import load, SafeLoader, YAMLError
 import logging
-from .models import Credentials, SourceConfig, ETLConfig, FieldMapping
+from .models import Credentials, SourceConfig, ETLConfig, FieldMapping, S3Config
 from .exceptions import ConfigError
 
 logger = logging.getLogger("pge_etl.config")
@@ -15,16 +15,22 @@ def load_config(path: str):
     except YAMLError as e:
         raise ConfigError(f"Invalid Yaml at {path}: {e}")
 
+    try:
+        s3config = _build_s3_config(raw["s3"])
+    except KeyError as e:
+        raise ConfigError(f"Config missing required S3 key: {e}")
+
     sources = {}
     for source_data in raw["sources"]:
         try:
             sources[source_data["name"]] = _build_source_config(source_data)
         except KeyError as e:
-            raise ConfigError(f"Layer {source_data["name"]} missing required key: {e}")
+            raise ConfigError(f"Source {source_data["name"]} missing required key: {e}")
 
     config = ETLConfig(
         db_name=raw["db_name"],
         schema_name=raw["schema_name"],
+        s3=s3config,
         sources=sources,
     )
 
@@ -50,6 +56,14 @@ def _build_source_config(source_data: dict):
         prim_key=source_data["prim_key"],
         update_cols=source_data["update_cols"],
         schema=schema,
+    )
+
+
+def _build_s3_config(s3info: dict):
+    return S3Config(
+        bucket=s3info["bucket"],
+        webhook_prefix=s3info["webhook_prefix"],
+        archive_prefix=s3info["archive_prefix"],
     )
 
 

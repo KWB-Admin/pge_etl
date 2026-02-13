@@ -1,10 +1,10 @@
-import logging, requests, datetime, polars
+import logging, requests, datetime, polars, boto3, json
 from requests.adapters import HTTPAdapter
 from requests.auth import HTTPBasicAuth
 from urllib3.util import Retry
 from typing import Dict
 import xml.etree.ElementTree as ET
-from .models import Credentials, SourceConfig
+from .models import Credentials, SourceConfig, S3Config
 from .exceptions import ExtractError
 
 logger = logging.getLogger("pge_etl.extract")
@@ -46,22 +46,34 @@ def build_schema(source_config) -> Dict:
     return schema
 
 
-def extract(creds: Credentials, source_config: SourceConfig):
+def extract(creds: Credentials, source_config: SourceConfig, s3config: S3Config):
     session = create_session()
     schema = build_schema(source_config)
+    token = get_access_token(session, creds)
+    data_list = []
     try:
-        urls = get_pending_webhooks()
-        token = get_access_token(session, creds)
-        data_file = get_data(session, urls, token)
-        data_list = parse_xml(data_file)
+        for urls in get_pending_webhooks(s3config.bucket, s3config.webhook_prefix):
+            for url in urls:
+                data_file = get_data(session, url, token)
+                data_list.extend(parse_xml(data_file))
         data = polars.from_dicts(data_list, schema=schema)
         return data
     except Exception as e:
         raise ExtractError(str(e))
 
 
-def get_pending_webhooks():
-    return ""
+def get_pending_webhooks(bucket: str, prefix: str):
+    s3 = boto3.client("s3")
+    paginator = s3.get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            key = obj["Key"]
+            if key.endswith("/"):
+                continue
+            response = s3.get_object(Bucket=bucket, Key=key)
+            payload = json.loads(response["Body"].read().decode("utf-8"))
+            url = payload.get("urls")
+            yield url
 
 
 def get_access_token(session: requests.Session, creds: Credentials) -> str:

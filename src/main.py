@@ -36,7 +36,9 @@ def main():
         source_metrics = metrics.start_source(source_name=source_name)
         logger.debug(f"[{source_name}] Running ETL")
         try:
-            rawdata = extract(creds=creds, source_config=source_config)
+            rawdata = extract(
+                creds=creds, source_config=source_config, s3config=config.s3
+            )
 
             source_metrics.records_extracted = rawdata.height
             if source_metrics.records_extracted == 0:

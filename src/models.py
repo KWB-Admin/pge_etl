@@ -71,6 +71,13 @@ class FieldMapping:
 
 
 @dataclass
+class S3Config:
+    bucket: str
+    webhook_prefix: str
+    archive_prefix: str
+
+
+@dataclass
 class SourceConfig:
     name: str
     table_name: str
@@ -110,6 +117,7 @@ class SourceConfig:
 class ETLConfig:
     db_name: str
     schema_name: str
+    s3: S3Config
     sources: Dict[str, SourceConfig]
 
     def validate(self) -> List[str]:
@@ -118,10 +126,12 @@ class ETLConfig:
             errors.append("db_name is required")
         if not self.schema_name:
             errors.append("schema_name is required")
+        if not self.s3:
+            errors.append("s3 info is requried")
         if not self.sources:
-            errors.append("layers is required")
-        for layer in self.sources.values():
-            errors.extend(layer.validate())
+            errors.append("sources are required")
+        for source in self.sources.values():
+            errors.extend(source.validate())
 
         return errors
 

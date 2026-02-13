@@ -1,6 +1,11 @@
 db_name: kwb_dw
 schema_name: pge
 
+s3:
+  bucket: kwb-crl-bucket
+  webhook_prefix: pge/webhooks/unprocessed
+  archive_prefix: pge/webhooks/processed
+
 sources:
   - name: pge_daily_energy_usage
     table_name: fact_daily_energy_usage
