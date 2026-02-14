@@ -52,10 +52,11 @@ def extract(creds: Credentials, source_config: SourceConfig, s3config: S3Config)
     token = get_access_token(session, creds)
     data_list = []
     try:
-        for urls in get_pending_webhooks(s3config.bucket, s3config.webhook_prefix):
+        for key, urls in get_pending_webhooks(s3config.bucket, s3config.webhook_prefix):
             for url in urls:
                 data_file = get_data(session, url, token)
                 data_list.extend(parse_xml(data_file))
+            mark_webhooks_processed(s3config.bucket, s3config.archive_prefix, key)
         data = polars.from_dicts(data_list, schema=schema)
         return data
     except Exception as e:
@@ -73,7 +74,23 @@ def get_pending_webhooks(bucket: str, prefix: str):
             response = s3.get_object(Bucket=bucket, Key=key)
             payload = json.loads(response["Body"].read().decode("utf-8"))
             url = payload.get("urls")
-            yield url
+            yield key, url
+
+
+def mark_webhooks_processed(bucket: str, archive_prefix: str, key: str):
+    s3 = boto3.client("s3")
+
+    # Build new key: "pge/webhooks/unprocessed/foo.json" -> "pge/webhooks/processed/foo.json"
+    filename = key.split("/")[-1]
+    new_key = f"{archive_prefix}{filename}"
+
+    # Copy to processed/
+    s3.copy_object(
+        Bucket=bucket, CopySource={"Bucket": bucket, "Key": key}, Key=new_key
+    )
+
+    # Delete from unprocessed/
+    s3.delete_object(Bucket=bucket, Key=key)
 
 
 def get_access_token(session: requests.Session, creds: Credentials) -> str:
