@@ -13,7 +13,7 @@ with open(config_path) as f:
     config = load(f, SafeLoader)
 
 dag_id = "pge_etl"
-schedule = "0 +/4 * * *"
+schedule = "0 */4 * * *"
 with DAG(dag_id, schedule=schedule, catchup=False) as dag:
     source_tasks = []
     all_dbt_models = []
